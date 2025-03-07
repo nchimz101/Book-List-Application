@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Book List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: #343a40;
+            color: #fff;
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .add-book-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .add-book-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .add-book-btn:hover {
+            background-color: #0069d9;
+        }
+        
+        .book-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .book-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #ddd;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .book-header {
+            background-color: #f1f8ff;
+            padding: 1rem;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        
+        .book-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #007bff;
+        }
+        
+        .book-author {
+            font-size: 1rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .book-content {
+            padding: 1rem;
+        }
+        
+        .book-description {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .book-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .book-actions button {
+            padding: 0.5rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .edit-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+        
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .book-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .book-list {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 1.5rem 0;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Book List</h1>
+        <p>Keep track of your favorite books</p>
+    </header>
+    
+    <div class="container">
+        <div class="add-book-container">
+            <button id="add-book-btn" class="add-book-btn">Add Book</button>
+        </div>
+        
+        <div id="book-list" class="book-list">
+            <!-- Books will be added here dynamically -->
+        </div>
+        
+        <div id="empty-message" class="empty-message">
+            <p>Your book list is empty. Add your first book to get started!</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addBookBtn = document.getElementById('add-book-btn');
+            const bookList = document.getElementById('book-list');
+            const emptyMessage = document.getElementById('empty-message');
+            
+            // Load books from localStorage
+            let books = JSON.parse(localStorage.getItem('books')) || [];
+            
+            // Function to save books to localStorage
+            function saveBooks() {
+                localStorage.setItem('books', JSON.stringify(books));
+            }
+            
+            // Function to render the book list
+            function renderBooks() {
+                bookList.innerHTML = '';
+                
+                if (books.length === 0) {
+                    emptyMessage.style.display = 'block';
+                    return;
+                }
+                
+                emptyMessage.style.display = 'none';
+                
+                books.forEach((book, index) => {
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'book-card';
+                    
+                    const bookHeader = document.createElement('div');
+                    bookHeader.className = 'book-header';
+                    
+                    const bookTitle = document.createElement('h2');
+                    bookTitle.className = 'book-title';
+                    bookTitle.textContent = book.title;
+                    
+                    const bookAuthor = document.createElement('p');
+                    bookAuthor.className = 'book-author';
+                    bookAuthor.textContent = `By ${book.author}`;
+                    
+                    bookHeader.appendChild(bookTitle);
+                    bookHeader.appendChild(bookAuthor);
+                    
+                    const bookContent = document.createElement('div');
+                    bookContent.className = 'book-content';
+                    
+                    const bookDescription = document.createElement('p');
+                    bookDescription.className = 'book-description';
+                    bookDescription.textContent = book.description;
+                    
+                    const bookActions = document.createElement('div');
+                    bookActions.className = 'book-actions';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit-btn';
+                    editBtn.textContent = 'Edit';
+                    editBtn.addEventListener('click', () => editBook(index));
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', () => deleteBook(index));
+                    
+                    bookActions.appendChild(editBtn);
+                    bookActions.appendChild(deleteBtn);
+                    
+                    bookContent.appendChild(bookDescription);
+                    bookContent.appendChild(bookActions);
+                    
+                    bookCard.appendChild(bookHeader);
+                    bookCard.appendChild(bookContent);
+                    
+                    bookList.appendChild(bookCard);
+                });
+            }
+            
+            // Function to add a new book
+            function addBook() {
+                const title = prompt('Enter book title:');
+                if (title === null || title.trim() === '') return;
+                
+                const author = prompt('Enter book author:');
+                if (author === null || author.trim() === '') return;
+                
+                const description = prompt('Enter book description:');
+                if (description === null || description.trim() === '') return;
+                
+                books.push({
+                    title: title.trim(),
+                    author: author.trim(),
+                    description: description.trim()
+                });
+                
+                saveBooks();
+                renderBooks();
+            }
+            
+            // Function to edit a book
+            function editBook(index) {
+                const book = books[index];
+                
+                const title = prompt('Edit book title:', book.title);
+                if (title === null) return;
+                
+                const author = prompt('Edit book author:', book.author);
+                if (author === null) return;
+                
+                const description = prompt('Edit book description:', book.description);
+                if (description === null) return;
+                
+                // Update only if new values are provided
+                books[index] = {
+                    title: title.trim() || book.title,
+                    author: author.trim() || book.author,
+                    description: description.trim() || book.description
+                };
+                
+                saveBooks();
+                renderBooks();
+            }
+            
+            // Function to delete a book
+            function deleteBook(index) {
+                if (confirm(`Are you sure you want to delete "${books[index].title}"?`)) {
+                    books.splice(index, 1);
+                    saveBooks();
+                    renderBooks();
+                }
+            }
+            
+            // Event listeners
+            addBookBtn.addEventListener('click', addBook);
+            
+            // Initialize the app
+            renderBooks();
+            
+            // Add sample books if the list is empty
+            if (books.length === 0) {
+                books = [
+                    {
+                        title: 'To Kill a Mockingbird',
+                        author: 'Harper Lee',
+                        description: 'The story of racial injustice and the loss of innocence in a small Southern town through the eyes of a young girl named Scout Finch.'
+                    },
+                    {
+                        title: '1984',
+                        author: 'George Orwell',
+                        description: 'A dystopian novel set in a totalitarian society ruled by the Party, which has total control over every aspect of people\'s lives.'
+                    },
+                    {
+                        title: 'The Great Gatsby',
+                        author: 'F. Scott Fitzgerald',
+                        description: 'The story of eccentric millionaire Jay Gatsby as told by Nick Carraway, a Midwesterner who lives on Long Island but works in Manhattan.'
+                    }
+                ];
+                saveBooks();
+                renderBooks();
+            }
+        });
+    </script>
+</body>
+</html>
